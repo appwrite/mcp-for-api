@@ -1,5 +1,8 @@
+from __future__ import annotations
+from typing import List
 import asyncio
 import os
+import argparse
 import mcp.server.stdio
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
@@ -19,6 +22,19 @@ from appwrite.exception import AppwriteException
 from .tool_manager import ToolManager
 from .service import Service
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Appwrite MCP Server')
+    parser.add_argument('--databases', action='store_true', help='Enable Databases service')
+    parser.add_argument('--users', action='store_true', help='Enable Users service')
+    parser.add_argument('--teams', action='store_true', help='Enable Teams service')
+    parser.add_argument('--storage', action='store_true', help='Enable Storage service')
+    parser.add_argument('--functions', action='store_true', help='Enable Functions service')
+    parser.add_argument('--messaging', action='store_true', help='Enable Messaging service')
+    parser.add_argument('--locale', action='store_true', help='Enable Locale service')
+    parser.add_argument('--avatars', action='store_true', help='Enable Avatars service')
+    parser.add_argument('--all', action='store_true', help='Enable all services')
+    return parser.parse_args()
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -36,14 +52,37 @@ client.set_endpoint(endpoint)
 client.set_project(project_id)
 client.set_key(api_key)
 
-# Initialize tools manager and register services
+# Initialize tools manager
 tools_manager = ToolManager()
-tools_manager.register_service(Service(Users(client), "users"))
-# tools_manager.register_service(Service(Teams(client), "teams"))
-tools_manager.register_service(Service(Databases(client), "databases"))
-# tools_manager.register_service(Service(Storage(client), "storage"))
-# tools_manager.register_service(Service(Functions(client), "functions"))
-# tools_manager.register_service(Service(Messaging(client), "messaging"))
+
+def register_services(args):
+    # If --all is specified, enable all services
+    if args.all:
+        args.databases = args.users = args.teams = args.storage = True
+        args.functions = args.messaging = args.locale = args.avatars = True
+
+    # Register services based on CLI arguments
+    if args.databases:
+        tools_manager.register_service(Service(Databases(client), "databases"))
+    if args.users:
+        tools_manager.register_service(Service(Users(client), "users"))
+    if args.teams:
+        tools_manager.register_service(Service(Teams(client), "teams"))
+    if args.storage:
+        tools_manager.register_service(Service(Storage(client), "storage"))
+    if args.functions:
+        tools_manager.register_service(Service(Functions(client), "functions"))
+    if args.messaging:
+        tools_manager.register_service(Service(Messaging(client), "messaging"))
+    if args.locale:
+        tools_manager.register_service(Service(Locale(client), "locale"))
+    if args.avatars:
+        tools_manager.register_service(Service(Avatars(client), "avatars"))
+
+    # If no services were specified, enable databases by default
+    if not any([args.databases, args.users, args.teams, args.storage,
+                args.functions, args.messaging, args.locale, args.avatars]):
+        tools_manager.register_service(Service(Databases(client), "databases"))
 
 async def serve() -> Server:
     server = Server("Appwrite MCP Server")
@@ -76,6 +115,9 @@ async def serve() -> Server:
     return server
 
 async def _run():
+    args = parse_args()
+    register_services(args)
+    
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         server = await serve()
         await server.run(
@@ -83,7 +125,7 @@ async def _run():
             write_stream,
             InitializationOptions(
                 server_name="appwrite",
-                server_version="0.1.0",
+                server_version="0.1.3",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},
