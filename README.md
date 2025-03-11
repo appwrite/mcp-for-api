@@ -91,7 +91,7 @@ Both the `uv` and `pip` setup processes require certain arguments to enable MCP 
 
 ## Usage with Claude Desktop
 
-Add this to your `claude_desktop_config.json`:
+In the Claude Desktop app, open the app's **Settings** page (press `CTRL + ,` on Windows or `CMD + ,` on MacOS) and head to the **Developer** tab. Clicking on the **Edit Config** button will take you to the `claude_desktop_config.json` file, where you must add the following:
 
 ```json
 {
@@ -100,7 +100,7 @@ Add this to your `claude_desktop_config.json`:
       "command": "uvx",
       "args": [
         "mcp-server-appwrite",
-        "--users"
+        "--databases"
       ],
       "env": {
         "APPWRITE_PROJECT_ID": "your-project-id",
@@ -112,6 +112,9 @@ Add this to your `claude_desktop_config.json`:
 }
 
 ```
+
+> Note: In case you see an `ENOENT uvx` error, ensure that `uvx` is added to the `PATH` environment variable on your system or use the full path to your `uvx` installation.
+
 Upon successful configuration, you should be able to see the server in the list of available servers in Claude Desktop.
 
 ![Claude Desktop Config](images/claude-desktop-integration.png)
@@ -224,13 +227,3 @@ Make sure your `.env` file is properly configured before running the inspector. 
 ## License
 
 This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
-
-## Todos
-- Add MCP server to registries
-  - Glama
-  - https://github.com/chatmcp/mcp-directory
-  - https://mcp.so/
-  - https://github.com/punkpeye/awesome-mcp-servers
-  - https://portkey.ai/mcp-servers
-  - https://www.claudemcp.com/servers
-- Add support for SSE server
