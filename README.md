@@ -2,6 +2,10 @@
 
 <!-- Cover image will go here once available -->
 
+<a href="https://glama.ai/mcp/servers/4c8hai9wl5">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/4c8hai9wl5/badge" alt="Appwrite Server MCP server" />
+</a>
+
 ## Overview
 
 A Model Context Protocol server for interacting with Appwrite's API. This server provides tools to manage databases, users, functions, teams, and more within your Appwrite project.
