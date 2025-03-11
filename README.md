@@ -1,5 +1,7 @@
 # Appwrite MCP server
 
+[![smithery badge](https://smithery.ai/badge/@appwrite/mcp)](https://smithery.ai/server/@appwrite/mcp)
+
 <!-- Cover image will go here once available -->
 
 ## Overview
@@ -35,6 +37,14 @@ APPWRITE_ENDPOINT=your-endpoint  # Optional, defaults to https://cloud.appwrite.
 > Note: Ensure that your API Key has the necessary scopes to access the resources you want to use.
 
 ## Installation
+
+### Installing via Smithery
+
+To install Appwrite MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@appwrite/mcp):
+
+```bash
+npx -y @smithery/cli install @appwrite/mcp --client claude
+```
 
 ### Using uv (recommended)
 When using [`uv`](https://docs.astral.sh/uv/) no specific installation is needed. We will
