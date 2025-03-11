@@ -113,7 +113,7 @@ In the Claude Desktop app, open the app's **Settings** page (press `CTRL + ,` on
 
 ```
 
-> Note: In case you see an `ENOENT uvx` error, ensure that `uvx` is added to the `PATH` environment variable on your system or use the full path to your `uvx` installation.
+> Note: In case you see a `uvx ENOENT` error, ensure that you either add `uvx` to the `PATH` environment variable on your system or use the full path to your `uvx` installation in the config file.
 
 Upon successful configuration, you should be able to see the server in the list of available servers in Claude Desktop.
 
