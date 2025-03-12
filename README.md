@@ -99,8 +99,7 @@ In the Claude Desktop app, open the app's **Settings** page (press `CTRL + ,` on
     "appwrite": {
       "command": "uvx",
       "args": [
-        "mcp-server-appwrite",
-        "--databases"
+        "mcp-server-appwrite"
       ],
       "env": {
         "APPWRITE_PROJECT_ID": "your-project-id",
