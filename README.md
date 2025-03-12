@@ -25,7 +25,7 @@ Create a `.env` file in your working directory and add the following:
 ```env
 APPWRITE_PROJECT_ID=your-project-id
 APPWRITE_API_KEY=your-api-key
-APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1   // Optional
+APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
 ```
 
 Then, open your terminal and run the following command
