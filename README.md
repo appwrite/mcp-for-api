@@ -126,7 +126,7 @@ Head to Cursor `Settings > MCP` and click on **Add new MCP server**. Choose the 
 - **MacOS**
 
 ```bash
-APPWRITE_PROJECT_ID=your-project-id APPWRITE_API_KEY=your-api-key uvx mcp-server-appwrite
+env APPWRITE_API_KEY=your-api-key env APPWRITE_PROJECT_ID=your-project-id uvx mcp-server-appwrite
 ```
 
 - **Windows**
