@@ -20,14 +20,20 @@ A Model Context Protocol server for interacting with Appwrite's API. This server
 
 > Before launching the MCP server, you must setup an [Appwrite project](https://cloud.appwrite.io/) and create an API key with the necessary scopes enabled.
 
-Open the terminal in your working directory and run the following command:
+Create a `.env` file in your working directory and add the following:
+
+```env
+APPWRITE_PROJECT_ID=your-project-id
+APPWRITE_API_KEY=your-api-key
+APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1   // Optional
+```
+
+Then, open your terminal and run the following command
 
 ### Linux and MacOS
 
 ```sh
-export APPWRITE_PROJECT_ID=your-project-id
-export APPWRITE_API_KEY=your-api-key
-export APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+source .env
 ```
 
 ### Windows
@@ -35,17 +41,17 @@ export APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
 #### Command Prompt
 
 ```cmd
-SET APPWRITE_PROJECT_ID=your-project-id
-SET APPWRITE_API_KEY=your-api-key
-SET APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+for /f "tokens=1,2 delims==" %A in (.env) do set %A=%B
 ```
 
 #### PowerShell
 
 ```powershell
-$env:APPWRITE_PROJECT_ID="your-project-id";
-$env:APPWRITE_API_KEY="your-api-key";
-$env:APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1";
+Get-Content .\.env | ForEach-Object {
+  if ($_ -match '^(.*?)=(.*)$') {
+    [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
+  }
+}
 ```
 
 ## Installation
