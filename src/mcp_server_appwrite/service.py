@@ -29,6 +29,14 @@ class Service():
             list: "array",
             dict: "object"
         }
+
+        if hasattr(py_type, "__origin__") and py_type.__origin__ is list:
+            item_type = py_type.__args__[0]
+            return {
+                "type": "array",
+                "items": self.python_type_to_json_schema(item_type)
+            }
+
         return {"type": type_mapping.get(py_type, "string")}
 
     def list_tools(self) -> Dict[str, Dict]:
