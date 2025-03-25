@@ -38,7 +38,6 @@ class Service():
         if hasattr(py_type, "__origin__") and py_type.__origin__ is Union:
             args = getattr(py_type, "__args__", ())
             if len(args) == 2 and args[1] is type(None):
-                # This is Optional[T]
                 schema = self.python_type_to_json_schema(args[0])
                 return schema
         
