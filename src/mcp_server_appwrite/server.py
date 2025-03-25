@@ -87,8 +87,6 @@ def register_services(args):
 async def serve() -> Server:
     server = Server("Appwrite MCP Server")
     
-    print(tools_manager.get_tool("databases_list"))
-    
     @server.list_tools()
     async def handle_list_tools() -> list[types.Tool]:
         return tools_manager.get_all_tools()
