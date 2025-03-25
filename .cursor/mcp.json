@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+      "appwrite": {
+        "command": "APPWRITE_API_KEY=standard_be5402f09f523012fc5be8c16f6ec0d3799d71ede799151deae5d8bc68d54beaee5f51b41ae3f3771af335ae991718f9ef7a5763d2c45404d3e8796c5c61adc87c6228ced8f4deb8069ad962f17b3a93a461b592f3e718829c200b2bcde21aef9d765c16f9646ceb23fa38d87d043ab09f9e609d32fc2a3e09b75f1eafd03e8f APPWRITE_PROJECT_ID=copyme uvx",
+        "args": ["mcp-server-appwrite"]
+      }
+    }
+}
