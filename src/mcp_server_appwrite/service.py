@@ -1,6 +1,7 @@
 from typing import Any, get_type_hints, Dict, List, Optional, Union
 import inspect
 from mcp.types import Tool
+from docstring_parser import parse
 
 class Service():
     """Base class for all Appwrite services"""
@@ -86,7 +87,7 @@ class Service():
             # Get the overridden name if it exists
             tool_name = self._method_name_overrides.get(name, f"{self.service_name}_{name}")
 
-            docstring = (original_func.__doc__ or "No description available").strip()
+            docstring = parse(original_func.__doc__)
             signature = inspect.signature(original_func)
             type_hints = get_type_hints(original_func)
 
@@ -100,13 +101,17 @@ class Service():
                 param_type = type_hints.get(param_name, str)
                 properties[param_name] = self.python_type_to_json_schema(param_type)
                 properties[param_name]["description"] = f"Parameter '{param_name}'"
+                
+                for doc_param in docstring.params:
+                    if doc_param.arg_name == param_name:
+                        properties[param_name]["description"] = doc_param.description
 
                 if param.default is param.empty:
                     required.append(param_name)
 
             tool_definition = Tool(
                 name=tool_name,
-                description=f"{docstring}",
+                description=f"{docstring.short_description or "No description available"}",
                 inputSchema={
                     "type": "object",
                     "properties": properties,
