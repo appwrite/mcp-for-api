@@ -1,5 +1,7 @@
 # Appwrite MCP server
 
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=appwrite&config=eyJjb21tYW5kIjoidXZ4IG1jcC1zZXJ2ZXItYXBwd3JpdGUgLS11c2VycyIsImVudiI6eyJBUFBXUklURV9BUElfS0VZIjoiPHlvdXItYXBpLWtleT4iLCJBUFBXUklURV9QUk9KRUNUX0lEIjoiPHlvdXItcHJvamVjdC1pZD4iLCJBUFBXUklURV9FTkRQT0lOVCI6Imh0dHBzOi8vPFJFR0lPTj4uY2xvdWQuYXBwd3JpdGUuaW8vdjEifX0%3D)
+
 ## Overview
 
 A Model Context Protocol server for interacting with Appwrite's API. This server provides tools to manage databases, users, functions, teams, and more within your Appwrite project.
@@ -123,13 +125,6 @@ Upon successful configuration, you should be able to see the server in the list 
 ![Claude Desktop Config](images/claude-desktop-integration.png)
 
 ## Usage with [Cursor](https://www.cursor.com/)
-
-Install by clicking the button below:
-
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=appwrite&config=eyJjb21tYW5kIjoidXZ4IG1jcC1zZXJ2ZXItYXBwd3JpdGUgLS11c2VycyIsImVudiI6eyJBUFBXUklURV9BUElfS0VZIjoiPHlvdXItYXBpLWtleT4iLCJBUFBXUklURV9QUk9KRUNUX0lEIjoiPHlvdXItcHJvamVjdC1pZD4iLCJBUFBXUklURV9FTkRQT0lOVCI6Imh0dHBzOi8vPFJFR0lPTj4uY2xvdWQuYXBwd3JpdGUuaW8vdjEifX0%3D)
-
-
-### Manual Installation
 
 Head to Cursor `Settings > MCP` and click on **Add new MCP server**. Choose the type as `Command` and add the command below to the **Command** field.
 
