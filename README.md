@@ -13,6 +13,7 @@ A Model Context Protocol server for interacting with Appwrite's API. This server
   - [Claude Desktop](#usage-with-claude-desktop)
   - [Cursor](#usage-with-cursor)
   - [Windsurf Editor](#usage-with-windsurf-editor)
+  - [VS Code](#usage-with-vs-code)
 - [Local Development](#local-development)
 - [Debugging](#debugging)
 
@@ -109,8 +110,8 @@ In the Claude Desktop app, open the app's **Settings** page (press `CTRL + ,` on
         "mcp-server-appwrite"
       ],
       "env": {
-        "APPWRITE_PROJECT_ID": "your-project-id",
-        "APPWRITE_API_KEY": "your-api-key",
+        "APPWRITE_PROJECT_ID": "<YOUR_PROJECT_ID>",
+        "APPWRITE_API_KEY": "<YOUR_API_KEY>",
         "APPWRITE_ENDPOINT": "https://<REGION>.cloud.appwrite.io/v1" // Optional
       }
     }
@@ -156,8 +157,8 @@ Head to Windsurf `Settings > Cascade > Model Context Protocol (MCP) Servers` and
         "mcp-server-appwrite"
       ],
       "env": {
-        "APPWRITE_PROJECT_ID": "your-project-id",
-        "APPWRITE_API_KEY": "your-api-key",
+        "APPWRITE_PROJECT_ID": "<YOUR_PROJECT_ID>",
+        "APPWRITE_API_KEY": "<YOUR_API_KEY>",
         "APPWRITE_ENDPOINT": "https://<REGION>.cloud.appwrite.io/v1" // Optional
       }
     }
@@ -166,6 +167,36 @@ Head to Windsurf `Settings > Cascade > Model Context Protocol (MCP) Servers` and
 ```
 
 ![Windsurf Settings](./images/windsurf-integration.png)
+
+## Usage with [VS Code](https://code.visualstudio.com/)
+
+### Configuration
+
+1. **Update the MCP configuration file**: Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and run `MCP: Open User Configuration`. It should open the `mcp.json` file in your user settings.
+
+2. **Add the Appwrite MCP server configuration**: Add the following to the `mcp.json` file:
+
+```json
+{
+  "servers": {
+    "appwrite": {
+      "command": "uvx",
+      "args": ["mcp-server-appwrite", "--users"],
+      "env": {
+        "APPWRITE_PROJECT_ID": "<YOUR_PROJECT_ID>",
+        "APPWRITE_API_KEY": "<YOUR_API_KEY>",
+        "APPWRITE_ENDPOINT": "https://<REGION>.cloud.appwrite.io/v1"
+      }
+    }
+  }
+}
+```
+
+3. **Start the MCP server**: Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and run `MCP: List Servers`. In the dropdown, select `appwrite` and click on the **Start Server** button.
+
+4. **Use in Copilot Chat**: Open Copilot Chat and switch to **Agent Mode** to access the Appwrite tools.
+
+![VS Code Settings](./images/vs-code-integration.png)
 
 ## Local Development
 
