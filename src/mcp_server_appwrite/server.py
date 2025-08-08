@@ -52,6 +52,7 @@ client = Client()
 client.set_endpoint(endpoint)
 client.set_project(project_id)
 client.set_key(api_key)
+client.add_header('x-sdk-name', 'mcp')
 
 # Initialize tools manager
 tools_manager = ToolManager()
