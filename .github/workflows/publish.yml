@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Publish to PyPI and MCP Registry
 on:
   release:
     types: [published]
@@ -7,6 +7,9 @@ jobs:
   publish:
     name: Release build and publish
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC authentication
+      contents: read
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -29,3 +32,22 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: twine upload dist/*
+
+      - name: Install MCP Publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/download/v1.1.0/mcp-publisher_1.1.0_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+          chmod +x mcp-publisher
+
+      - name: Validate server.json
+        run: |
+          # Install ajv-cli for JSON schema validation
+          npm install -g ajv-cli
+          # Download and validate server.json against MCP schema
+          curl -o server.schema.json https://static.modelcontextprotocol.io/schemas/2025-09-16/server.schema.json
+          ajv validate -s server.schema.json -d server.json --strict=false
+
+      - name: Login to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish

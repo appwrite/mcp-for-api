@@ -1,0 +1,54 @@
+{
+  "name": "io.github.appwrite/mcp-server-appwrite",
+  "description": "MCP server for Appwrite - manage databases, users, functions, teams, and more",
+  "version": "0.2.1",
+  "author": "Appwrite",
+  "license": "MIT",
+  "homepage": "https://github.com/appwrite/mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appwrite/mcp.git",
+    "source": "https://github.com/appwrite/mcp"
+  },
+  "packages": [
+    {
+      "version": "0.2.1",
+      "registryType": "pypi",
+      "identifier": "mcp-server-appwrite",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "capabilities": {
+    "tools": true
+  },
+  "command": {
+    "type": "pip",
+    "package": "mcp-server-appwrite",
+    "command": "mcp-server-appwrite"
+  },
+  "environment": {
+    "APPWRITE_PROJECT_ID": {
+      "description": "Your Appwrite project ID",
+      "required": true
+    },
+    "APPWRITE_API_KEY": {
+      "description": "Your Appwrite API key with necessary scopes",
+      "required": true
+    },
+    "APPWRITE_ENDPOINT": {
+      "description": "Your Appwrite endpoint URL (optional, defaults to cloud.appwrite.io)",
+      "required": false,
+      "default": "https://cloud.appwrite.io/v1"
+    }
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "appwrite",
+    "database",
+    "backend",
+    "api"
+  ]
+}
