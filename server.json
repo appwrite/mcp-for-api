@@ -1,7 +1,7 @@
 {
   "name": "io.github.appwrite/mcp-for-api",
   "description": "MCP (Model Context Protocol) server for Appwrite",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Appwrite",
   "license": "MIT",
   "homepage": "https://github.com/appwrite/mcp-for-api",
@@ -12,7 +12,7 @@
   },
   "packages": [
     {
-      "version": "0.2.1",
+      "version": "0.2.2",
       "registryType": "pypi",
       "identifier": "mcp-server-appwrite",
       "transport": {
