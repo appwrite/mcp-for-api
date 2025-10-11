@@ -88,7 +88,7 @@ Both the `uv` and `pip` setup processes require certain arguments to enable MCP 
 
 | Argument | Description |
 | --- | --- |
-| `--databases` | Enables the Databases API |
+| `--tables-db` | Enables the TablesDB API |
 | `--users` | Enables the Users API |
 | `--teams` | Enables the Teams API |
 | `--storage` | Enables the Storage API |
@@ -98,6 +98,7 @@ Both the `uv` and `pip` setup processes require certain arguments to enable MCP 
 | `--avatars` | Enables the Avatars API |
 | `--sites` | Enables the Sites API |
 | `--all` | Enables all Appwrite APIs |
+| `--databases` | Enables the Legacy Databases API |
 
 ## Usage with Claude Desktop
 
