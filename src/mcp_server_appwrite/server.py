@@ -90,7 +90,7 @@ def register_services(args):
 
     # If no services were specified, enable tables_db by default
     if not any([args.databases, args.tables_db, args.users, args.teams, args.storage,
-                args.functions, args.messaging, args.locale, args.avatars]):
+                args.functions, args.messaging, args.locale, args.avatars, args.sites]):
         tools_manager.register_service(Service(TablesDB(client), "tables_db"))
 
 async def serve() -> Server:
