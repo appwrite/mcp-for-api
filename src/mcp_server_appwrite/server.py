@@ -10,6 +10,7 @@ from mcp.shared.exceptions import McpError
 from dotenv import load_dotenv
 from appwrite.client import Client
 from appwrite.services.databases import Databases
+from appwrite.services.tables_db import TablesDB
 from appwrite.services.users import Users
 from appwrite.services.teams import Teams
 from appwrite.services.storage import Storage
@@ -24,7 +25,7 @@ from .service import Service
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Appwrite MCP Server')
-    parser.add_argument('--databases', action='store_true', help='Enable Databases service')
+    parser.add_argument('--tables-db', action='store_true', help='Enable TablesDB service')
     parser.add_argument('--users', action='store_true', help='Enable Users service')
     parser.add_argument('--teams', action='store_true', help='Enable Teams service')
     parser.add_argument('--storage', action='store_true', help='Enable Storage service')
@@ -33,6 +34,7 @@ def parse_args():
     parser.add_argument('--locale', action='store_true', help='Enable Locale service')
     parser.add_argument('--avatars', action='store_true', help='Enable Avatars service')
     parser.add_argument('--sites', action='store_true', help='Enable Sites service')
+    parser.add_argument('--databases', action='store_true', help='Enable Legacy Databases service')
     parser.add_argument('--all', action='store_true', help='Enable all services')
     return parser.parse_args()
 
@@ -60,13 +62,13 @@ tools_manager = ToolManager()
 def register_services(args):
     # If --all is specified, enable all services
     if args.all:
-        args.databases = args.users = args.teams = args.storage = True
+        args.tables_db = args.users = args.teams = args.storage = True
         args.functions = args.messaging = args.locale = args.avatars = True
         args.sites = True
 
     # Register services based on CLI arguments
-    if args.databases:
-        tools_manager.register_service(Service(Databases(client), "databases"))
+    if args.tables_db:
+        tools_manager.register_service(Service(TablesDB(client), "tables_db"))
     if args.users:
         tools_manager.register_service(Service(Users(client), "users"))
     if args.teams:
@@ -83,11 +85,13 @@ def register_services(args):
         tools_manager.register_service(Service(Avatars(client), "avatars"))
     if args.sites:
         tools_manager.register_service(Service(Sites(client), "sites"))
-
-    # If no services were specified, enable databases by default
-    if not any([args.databases, args.users, args.teams, args.storage,
-                args.functions, args.messaging, args.locale, args.avatars]):
+    if args.databases:
         tools_manager.register_service(Service(Databases(client), "databases"))
+
+    # If no services were specified, enable tables_db by default
+    if not any([args.databases, args.tables_db, args.users, args.teams, args.storage,
+                args.functions, args.messaging, args.locale, args.avatars, args.sites]):
+        tools_manager.register_service(Service(TablesDB(client), "tables_db"))
 
 async def serve() -> Server:
     server = Server("Appwrite MCP Server")
@@ -130,7 +134,7 @@ async def _run():
             write_stream,
             InitializationOptions(
                 server_name="appwrite",
-                server_version="0.2.0",
+                server_version="0.2.8",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},
