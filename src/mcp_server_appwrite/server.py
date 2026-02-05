@@ -134,7 +134,7 @@ async def _run():
             write_stream,
             InitializationOptions(
                 server_name="appwrite",
-                server_version="0.3.2",
+                server_version="0.3.3",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},
