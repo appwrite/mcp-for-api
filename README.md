@@ -88,7 +88,7 @@ Both the `uv` and `pip` setup processes require certain arguments to enable MCP 
 
 | Argument | Description |
 | --- | --- |
-| `--tables-db` | Enables the TablesDB API |
+| `--tablesdb` | Enables the TablesDB API |
 | `--users` | Enables the Users API |
 | `--teams` | Enables the Teams API |
 | `--storage` | Enables the Storage API |
