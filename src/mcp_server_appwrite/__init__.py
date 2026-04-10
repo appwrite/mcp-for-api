@@ -1,11 +1,16 @@
-from . import server
 import asyncio
+import sys
 
 
 def main():
     """Main entry point for the package."""
-    asyncio.run(server._run())
+    from .server import _run
+
+    try:
+        asyncio.run(_run())
+    except KeyboardInterrupt:
+        print("[appwrite-mcp] Shutdown requested", file=sys.stderr, flush=True)
+        return 0
 
 
-# Optionally expose other important items at package level
-__all__ = ["main", "server"]
+__all__ = ["main"]

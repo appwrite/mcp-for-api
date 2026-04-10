@@ -2,7 +2,7 @@
 
 mcp-name: io.github.appwrite/mcp-for-api
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=appwrite&config=eyJjb21tYW5kIjoidXZ4IG1jcC1zZXJ2ZXItYXBwd3JpdGUgLS11c2VycyIsImVudiI6eyJBUFBXUklURV9BUElfS0VZIjoiPHlvdXItYXBpLWtleT4iLCJBUFBXUklURV9QUk9KRUNUX0lEIjoiPHlvdXItcHJvamVjdC1pZD4iLCJBUFBXUklURV9FTkRQT0lOVCI6Imh0dHBzOi8vPFJFR0lPTj4uY2xvdWQuYXBwd3JpdGUuaW8vdjEifX0%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/install-mcp?name=appwrite&config=%7B%22command%22%3A%22uvx%20mcp-server-appwrite%22%2C%22env%22%3A%7B%22APPWRITE_API_KEY%22%3A%22%3Cyour-api-key%3E%22%2C%22APPWRITE_PROJECT_ID%22%3A%22%3Cyour-project-id%3E%22%2C%22APPWRITE_ENDPOINT%22%3A%22https%3A//%3CREGION%3E.cloud.appwrite.io/v1%22%7D%7D)
 
 ## Overview
 
@@ -22,6 +22,8 @@ A Model Context Protocol server for interacting with Appwrite's API. This server
 ## Configuration
 
 > Before launching the MCP server, you must setup an [Appwrite project](https://cloud.appwrite.io/) and create an API key with the necessary scopes enabled.
+
+The server validates the credentials and scopes required for its built-in Appwrite service set during startup. If the endpoint, project ID, API key, or scopes are wrong, the MCP server will fail to start instead of waiting for the first tool call to fail.
 
 Create a `.env` file in your working directory and add the following:
 
@@ -64,7 +66,7 @@ When using [`uv`](https://docs.astral.sh/uv/) no specific installation is needed
 use [`uvx`](https://docs.astral.sh/uv/guides/tools/) to directly run *mcp-server-appwrite*.
 
 ```bash
-uvx mcp-server-appwrite [args]
+uvx mcp-server-appwrite
 ```
 
 ### Using pip
@@ -75,30 +77,22 @@ pip install mcp-server-appwrite
 Then run the server using 
 
 ```bash
-python -m mcp_server_appwrite [args]
+python -m mcp_server_appwrite
 ```
 
-### Command-line arguments
+### Tool surface
 
-Both the `uv` and `pip` setup processes require certain arguments to enable MCP tools for various Appwrite APIs.
+The server no longer accepts service-selection or mode flags. It always starts in a compact workflow so the MCP client only sees a small operator-style surface while the full Appwrite catalog stays internal.
 
-> When an MCP tool is enabled, the tool's definition is passed to the LLM, using up tokens from the model's available context window. As a result, the effective context window is reduced.  
->  
-> The default Appwrite MCP server ships with only the Databases tools (our most commonly used API) enabled to stay within these limits. Additional tools can be enabled by using the flags below.
+- Only 2 MCP tools are exposed to the model:
+  - `appwrite_search_tools`
+  - `appwrite_call_tool`
+- The full Appwrite tool catalog stays internal and is searched at runtime.
+- Large tool outputs are stored as MCP resources and returned as preview text plus a resource URI.
+- Mutating hidden tools require `confirm_write=true`.
+- The server automatically registers all supported Appwrite services except the legacy Databases API.
 
-| Argument | Description |
-| --- | --- |
-| `--tablesdb` | Enables the TablesDB API |
-| `--users` | Enables the Users API |
-| `--teams` | Enables the Teams API |
-| `--storage` | Enables the Storage API |
-| `--functions` | Enables the Functions API |
-| `--messaging` | Enables the Messaging API |
-| `--locale` | Enables the Locale API |
-| `--avatars` | Enables the Avatars API |
-| `--sites` | Enables the Sites API |
-| `--all` | Enables all Appwrite APIs |
-| `--databases` | Enables the Legacy Databases API |
+If you still have older MCP configs that pass flags such as `--mode` or `--users`, remove them.
 
 ## Usage with Claude Desktop
 
@@ -184,7 +178,7 @@ Head to Windsurf `Settings > Cascade > Model Context Protocol (MCP) Servers` and
   "servers": {
     "appwrite": {
       "command": "uvx",
-      "args": ["mcp-server-appwrite", "--users"],
+      "args": ["mcp-server-appwrite"],
       "env": {
         "APPWRITE_PROJECT_ID": "<YOUR_PROJECT_ID>",
         "APPWRITE_API_KEY": "<YOUR_API_KEY>",
@@ -206,7 +200,7 @@ Head to Windsurf `Settings > Cascade > Model Context Protocol (MCP) Servers` and
 ### Clone the repository
 
 ```bash
-git clone https://github.com/appwrite/mcp.git
+git clone https://github.com/appwrite/mcp-for-api.git
 ```
 
 ### Install `uv`
@@ -249,6 +243,22 @@ source .venv/bin/activate
 
 ```bash
 uv run -v --directory ./ mcp-server-appwrite
+```
+
+## Testing
+
+### Unit tests
+
+```bash
+uv run python -m unittest discover -s tests/unit -v
+```
+
+### Live integration tests
+
+These tests create and delete real Appwrite resources against a real Appwrite project. They run automatically when valid Appwrite credentials are available in the environment or `.env`.
+
+```bash
+uv run --extra integration python -m unittest discover -s tests/integration -v
 ```
 
 ## Debugging
