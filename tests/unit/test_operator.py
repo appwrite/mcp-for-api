@@ -31,6 +31,11 @@ class OperatorTests(unittest.TestCase):
                 "function": object(),
                 "parameter_types": {},
             },
+            "functions_get": {
+                "definition": make_tool("functions_get", "Get a function."),
+                "function": object(),
+                "parameter_types": {},
+            },
             "tables_db_create": {
                 "definition": make_tool(
                     "tables_db_create", "Create a database.", ["database_id"]
@@ -107,6 +112,17 @@ class OperatorTests(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         self.assertIn("tables_db_create_string_column", result[0].text)
+
+    def test_search_tools_scores_get_queries_against_get_tools(self):
+        runtime = self.make_runtime(lambda name, arguments: [])
+
+        result = runtime.execute_public_tool(
+            "appwrite_search_tools",
+            {"query": "get function"},
+        )
+
+        self.assertEqual(len(result), 1)
+        self.assertIn("functions_get", result[0].text)
 
     def test_call_tool_requires_confirm_write(self):
         runtime = self.make_runtime(lambda name, arguments: [])

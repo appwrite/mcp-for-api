@@ -50,6 +50,7 @@ jobs:
   integration:
     name: Integration
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     env:
       APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
       APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}

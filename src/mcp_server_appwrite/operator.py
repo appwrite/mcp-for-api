@@ -103,6 +103,7 @@ class Operator:
         self._search_limit = search_limit
         self._result_store = ResultStore()
         self._catalog = self._build_catalog()
+        self._cached_catalog_json = self._catalog_json()
         self._catalog_map = {entry.tool_name: entry for entry in self._catalog}
 
     def get_catalog_resource_uri(self) -> str:
@@ -197,7 +198,7 @@ class Operator:
                 name="Appwrite Hidden Tool Catalog",
                 description="Full internal Appwrite tool catalog used by the Appwrite operator surface.",
                 mimeType="application/json",
-                size=len(self._catalog_json().encode("utf-8")),
+                size=len(self._cached_catalog_json.encode("utf-8")),
             )
         ]
 
@@ -228,7 +229,7 @@ class Operator:
         parsed = urlparse(uri)
 
         if uri == CATALOG_URI:
-            return [ReadResourceContents(self._catalog_json(), "application/json")]
+            return [ReadResourceContents(self._cached_catalog_json, "application/json")]
 
         if (
             parsed.scheme == "appwrite"
@@ -557,8 +558,10 @@ def _infer_query_intent(query_tokens: list[str]) -> str | None:
         return "update"
     if token_set & DELETE_HINTS:
         return "delete"
-    if token_set & READ_HINTS:
+    if token_set & {"list"}:
         return "list"
+    if token_set & READ_HINTS:
+        return "get"
     return None
 
 

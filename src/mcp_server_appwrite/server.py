@@ -2,6 +2,7 @@ from __future__ import annotations
 import asyncio
 import argparse
 import base64
+from dataclasses import dataclass
 import json
 import os
 import re
@@ -37,7 +38,14 @@ from .operator import Operator
 from .service import Service
 from .tool_manager import ToolManager
 
-SERVER_VERSION = "0.3.3"
+SERVER_VERSION = "0.4"
+
+
+@dataclass(frozen=True)
+class AppwriteConfig:
+    project_id: str
+    api_key: str
+    endpoint: str
 
 
 def _log_startup(message: str) -> None:
@@ -49,7 +57,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def build_client() -> Client:
+def load_appwrite_config() -> AppwriteConfig:
     cwd_dotenv = Path.cwd() / ".env"
     if cwd_dotenv.exists():
         load_dotenv(dotenv_path=cwd_dotenv)
@@ -67,10 +75,15 @@ def build_client() -> Client:
             "APPWRITE_PROJECT_ID and APPWRITE_API_KEY must be set in environment variables"
         )
 
+    return AppwriteConfig(project_id=project_id, api_key=api_key, endpoint=endpoint)
+
+
+def build_client(config: AppwriteConfig | None = None) -> Client:
+    config = config or load_appwrite_config()
     client = Client()
-    client.set_endpoint(endpoint)
-    client.set_project(project_id)
-    client.set_key(api_key)
+    client.set_endpoint(config.endpoint)
+    client.set_project(config.project_id)
+    client.set_key(config.api_key)
     client.add_header("x-sdk-name", "mcp")
     return client
 
@@ -95,7 +108,7 @@ def register_services(client: Client) -> ToolManager:
 
 def _validate_service(service: Service) -> None:
     match service.service_name:
-        case "databases" | "tables_db" | "users" | "teams" | "functions" | "sites":
+        case "tables_db" | "users" | "teams" | "functions" | "sites":
             service.service.list()
         case "storage":
             service.service.list_buckets()
@@ -508,10 +521,9 @@ async def serve(operator: Operator) -> Server:
 async def _run():
     parse_args()
     _log_startup("Loading Appwrite configuration")
-    client = build_client()
-    _log_startup(
-        f"Using Appwrite endpoint: {getattr(client, '_endpoint', '<unknown>')}"
-    )
+    config = load_appwrite_config()
+    client = build_client(config)
+    _log_startup(f"Using Appwrite endpoint: {config.endpoint}")
     _log_startup("Registering Appwrite services")
     tools_manager = register_services(client)
     _log_startup("Starting Appwrite service validation")
