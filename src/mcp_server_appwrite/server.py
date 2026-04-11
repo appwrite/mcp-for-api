@@ -38,7 +38,7 @@ from .operator import Operator
 from .service import Service
 from .tool_manager import ToolManager
 
-SERVER_VERSION = "0.4"
+SERVER_VERSION = "0.4.1"
 
 
 @dataclass(frozen=True)
