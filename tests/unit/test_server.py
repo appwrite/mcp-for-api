@@ -16,6 +16,7 @@ from appwrite_console.enums.browser import Browser
 from appwrite_console.exception import AppwriteException
 from appwrite_console.input_file import InputFile
 from appwrite_console.models.row_list import RowList
+from requests import Response
 
 from mcp_server_appwrite import server as server_module
 from mcp_server_appwrite.catalog_policy import API_KEY_PROFILE, OAUTH_PROFILE
@@ -443,6 +444,89 @@ class ServerHelperTests(unittest.TestCase):
                     "maximumFileSize": 10_485_760,
                 },
             )
+
+    def test_call_tool_reports_missing_sdk_arguments_before_execution(self):
+        client = build_introspection_client()
+        manager = register_services(client, profile=API_KEY_PROFILE)
+        server = build_mcp_server(build_operator(manager, client), transport="stdio")
+        entry = server.get_request_handler("tools/call")
+        self.assertIsNotNone(entry)
+        arguments = {"functionId": "function-id", "key": "GREETING", "value": "hello"}
+
+        with patch("appwrite_console.client.requests.request") as request:
+            with self.assertRaises(ValueError) as error:
+                execute_registered_tool(
+                    manager, "functions_create_variable", arguments, client=client
+                )
+            request.assert_not_called()
+        self.assertIn("variable_id", str(error.exception))
+
+        async def run_check():
+            ctx = Mock()
+            ctx.protocol_version = "2026-07-28"
+            ctx.meta = None
+            ctx.session.client_params = None
+            params = types.CallToolRequestParams(
+                name="appwrite_call_tool",
+                arguments={
+                    "tool_name": "functions_create_variable",
+                    "confirm_write": True,
+                    "arguments": arguments,
+                },
+            )
+            with patch("appwrite_console.client.requests.request") as request:
+                result = await entry.handler(ctx, params)
+
+            self.assertTrue(result.is_error)
+            self.assertIn("functions_create_variable", result.content[0].text)
+            self.assertIn("variable_id", result.content[0].text)
+            request.assert_not_called()
+
+        asyncio.run(run_check())
+
+    def test_execute_sdk_tool_preserves_required_arguments_and_optional_defaults(self):
+        client = build_introspection_client()
+        manager = register_services(client, profile=API_KEY_PROFILE)
+        response = Response()
+        response.status_code = 201
+        response.headers["Content-Type"] = "application/json"
+        response._content = json.dumps(
+            {
+                "$id": "variable-id",
+                "$createdAt": "2026-09-10T00:00:00.000+00:00",
+                "$updatedAt": "2026-09-10T00:00:00.000+00:00",
+                "key": "GREETING",
+                "value": "",
+                "secret": False,
+                "resourceType": "function",
+                "resourceId": "function-id",
+            }
+        ).encode()
+
+        with patch(
+            "appwrite_console.client.requests.request", return_value=response
+        ) as request:
+            result = execute_registered_tool(
+                manager,
+                "functions_create_variable",
+                {
+                    "functionId": "function-id",
+                    "variableId": "variable-id",
+                    "key": "GREETING",
+                    "value": "",
+                },
+                client=client,
+            )
+
+        request.assert_called_once()
+        self.assertTrue(
+            request.call_args.kwargs["url"].endswith("/functions/function-id/variables")
+        )
+        self.assertEqual(
+            json.loads(request.call_args.kwargs["data"]),
+            {"variableId": "variable-id", "key": "GREETING", "value": ""},
+        )
+        self.assertEqual(json.loads(result[0].text)["$id"], "variable-id")
 
     def test_format_tool_result_serializes_json(self):
         result = _format_tool_result(
