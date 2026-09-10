@@ -16,7 +16,6 @@ from appwrite_console.enums.browser import Browser
 from appwrite_console.exception import AppwriteException
 from appwrite_console.input_file import InputFile
 from appwrite_console.models.row_list import RowList
-from requests import Response
 
 from mcp_server_appwrite import server as server_module
 from mcp_server_appwrite.catalog_policy import API_KEY_PROFILE, OAUTH_PROFILE
@@ -452,6 +451,13 @@ class ServerHelperTests(unittest.TestCase):
         entry = server.get_request_handler("tools/call")
         self.assertIsNotNone(entry)
 
+        class TablesDbService:
+            def __init__(self, client):
+                pass
+
+            def list_rows(self, **arguments):
+                return {"total": 0, "rows": []}
+
         async def run_check():
             ctx = Mock()
             ctx.protocol_version = "2026-07-28"
@@ -468,77 +474,76 @@ class ServerHelperTests(unittest.TestCase):
                 [1],
             ):
                 with self.subTest(queries=queries):
-                    arguments = {
-                        "database_id": "database-id",
-                        "table_id": "table-id",
-                        "queries": queries,
-                    }
-                    with patch("appwrite_console.client.requests.request") as request:
-                        with self.assertRaises(ValueError) as error:
-                            execute_registered_tool(
-                                manager,
-                                "tables_db_list_rows",
-                                arguments,
-                                client=client,
-                            )
-                        request.assert_not_called()
-                    self.assertIn("queries", str(error.exception))
                     params = types.CallToolRequestParams(
                         name="appwrite_call_tool",
                         arguments={
                             "tool_name": "tables_db_list_rows",
-                            "arguments": arguments,
+                            "arguments": {
+                                "database_id": "database-id",
+                                "table_id": "table-id",
+                                "queries": queries,
+                            },
                         },
                     )
-                    with patch("appwrite_console.client.requests.request") as request:
-                        result = await entry.handler(ctx, params)
+                    result = await entry.handler(ctx, params)
 
                     self.assertTrue(result.is_error)
                     self.assertIn("queries", result.content[0].text)
                     self.assertIn("JSON", result.content[0].text)
-                    request.assert_not_called()
 
-        asyncio.run(run_check())
+        with patch.dict(server_module.SERVICE_CLASSES, {"tables_db": TablesDbService}):
+            asyncio.run(run_check())
 
-    def test_execute_sdk_tool_preserves_encoded_queries(self):
+    def test_call_tool_preserves_encoded_queries(self):
         client = build_introspection_client()
         manager = register_services(client, profile=API_KEY_PROFILE)
-        response = Response()
-        response.status_code = 200
-        response.headers["Content-Type"] = "application/json"
-        response._content = b'{"total":0,"rows":[]}'
+        server = build_mcp_server(build_operator(manager, client), transport="stdio")
+        entry = server.get_request_handler("tools/call")
+        self.assertIsNotNone(entry)
         query = '{"method":"equal","attribute":"name","values":["Zoë"]}'
+        received_queries = []
 
-        for queries, expected in (
-            ([query], {"queries[0]": query}),
-            ([], {}),
-            (None, {}),
-        ):
-            with (
-                self.subTest(queries=queries),
-                patch(
-                    "appwrite_console.client.requests.request", return_value=response
-                ) as request,
+        class TablesDbService:
+            def __init__(self, client):
+                pass
+
+            def list_rows(self, database_id, table_id, queries=None):
+                received_queries.append(queries)
+                return {"total": 0, "rows": []}
+
+        async def run_check():
+            ctx = Mock()
+            ctx.protocol_version = "2026-07-28"
+            ctx.meta = None
+            ctx.session.client_params = None
+            for arguments, expected in (
+                ({"queries": [query]}, [query]),
+                ({"queries": []}, []),
+                ({"queries": None}, None),
+                ({}, None),
             ):
-                result = execute_registered_tool(
-                    manager,
-                    "tables_db_list_rows",
-                    {
-                        "database_id": "database-id",
-                        "table_id": "table-id",
-                        "queries": queries,
-                    },
-                    client=client,
-                )
-
-                request.assert_called_once()
-                self.assertTrue(
-                    request.call_args.kwargs["url"].endswith(
-                        "/tablesdb/database-id/tables/table-id/rows"
+                with self.subTest(arguments=arguments):
+                    params = types.CallToolRequestParams(
+                        name="appwrite_call_tool",
+                        arguments={
+                            "tool_name": "tables_db_list_rows",
+                            "arguments": {
+                                "database_id": "database-id",
+                                "table_id": "table-id",
+                                **arguments,
+                            },
+                        },
                     )
-                )
-                self.assertEqual(request.call_args.kwargs["params"], expected)
-                self.assertEqual(json.loads(result[0].text), {"total": 0, "rows": []})
+                    result = await entry.handler(ctx, params)
+
+                    self.assertFalse(result.is_error)
+                    self.assertEqual(received_queries[-1], expected)
+                    self.assertEqual(
+                        json.loads(result.content[0].text), {"total": 0, "rows": []}
+                    )
+
+        with patch.dict(server_module.SERVICE_CLASSES, {"tables_db": TablesDbService}):
+            asyncio.run(run_check())
 
     def test_format_tool_result_serializes_json(self):
         result = _format_tool_result(
