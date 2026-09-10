@@ -781,6 +781,14 @@ def _normalize_argument_keys(
 def _validate_argument_keys(
     tool_name: str, tool_info: dict, arguments: dict[str, Any]
 ) -> None:
+    definition = tool_info.get("definition")
+    required = definition.input_schema.get("required", []) if definition else []
+    missing_names = sorted(name for name in required if name not in arguments)
+    if missing_names:
+        raise ValueError(
+            f"Missing required arguments for {tool_name}: {', '.join(missing_names)}."
+        )
+
     expected_names = _expected_argument_names(tool_info)
     if not expected_names:
         return

@@ -444,6 +444,99 @@ class ServerHelperTests(unittest.TestCase):
                 },
             )
 
+    def test_call_tool_reports_missing_sdk_arguments_before_execution(self):
+        client = build_introspection_client()
+        manager = register_services(client, profile=API_KEY_PROFILE)
+        server = build_mcp_server(build_operator(manager, client), transport="stdio")
+        entry = server.get_request_handler("tools/call")
+        self.assertIsNotNone(entry)
+
+        class FunctionsService:
+            def __init__(self, client):
+                pass
+
+            def create_variable(self, **arguments):
+                return {}
+
+        async def run_check():
+            ctx = Mock()
+            ctx.protocol_version = "2026-07-28"
+            ctx.meta = None
+            ctx.session.client_params = None
+            params = types.CallToolRequestParams(
+                name="appwrite_call_tool",
+                arguments={
+                    "tool_name": "functions_create_variable",
+                    "confirm_write": True,
+                    "arguments": {
+                        "functionId": "function-id",
+                        "key": "GREETING",
+                        "value": "hello",
+                    },
+                },
+            )
+            result = await entry.handler(ctx, params)
+
+            self.assertTrue(result.is_error)
+            self.assertIn("functions_create_variable", result.content[0].text)
+            self.assertIn("variable_id", result.content[0].text)
+
+        with patch.dict(server_module.SERVICE_CLASSES, {"functions": FunctionsService}):
+            asyncio.run(run_check())
+
+    def test_call_tool_preserves_required_arguments_and_optional_defaults(self):
+        client = build_introspection_client()
+        manager = register_services(client, profile=API_KEY_PROFILE)
+        server = build_mcp_server(build_operator(manager, client), transport="stdio")
+        entry = server.get_request_handler("tools/call")
+        self.assertIsNotNone(entry)
+
+        class FunctionsService:
+            def __init__(self, client):
+                pass
+
+            def create_variable(
+                self, function_id, variable_id, key, value, secret=False
+            ):
+                return {
+                    "$id": variable_id,
+                    "resourceId": function_id,
+                    "key": key,
+                    "value": value,
+                    "secret": secret,
+                }
+
+        async def run_check():
+            ctx = Mock()
+            ctx.protocol_version = "2026-07-28"
+            ctx.meta = None
+            ctx.session.client_params = None
+            params = types.CallToolRequestParams(
+                name="appwrite_call_tool",
+                arguments={
+                    "tool_name": "functions_create_variable",
+                    "confirm_write": True,
+                    "arguments": {
+                        "functionId": "function-id",
+                        "variableId": "variable-id",
+                        "key": "GREETING",
+                        "value": "",
+                    },
+                },
+            )
+            result = await entry.handler(ctx, params)
+
+            self.assertFalse(result.is_error)
+            variable = json.loads(result.content[0].text)
+            self.assertEqual(variable["$id"], "variable-id")
+            self.assertEqual(variable["resourceId"], "function-id")
+            self.assertEqual(variable["key"], "GREETING")
+            self.assertEqual(variable["value"], "")
+            self.assertFalse(variable["secret"])
+
+        with patch.dict(server_module.SERVICE_CLASSES, {"functions": FunctionsService}):
+            asyncio.run(run_check())
+
     def test_format_tool_result_serializes_json(self):
         result = _format_tool_result(
             "tables_db_list_rows", {"total": 1, "rows": []}, {}
