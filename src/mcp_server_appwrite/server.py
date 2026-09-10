@@ -686,6 +686,16 @@ def _coerce_argument(param_name: str, value: Any, param_type: Any) -> Any:
     origin = get_origin(param_type)
     args = get_args(param_type)
 
+    if param_name == "queries" and origin is list:
+        if not isinstance(value, list) or any(
+            not isinstance(query, str) for query in value
+        ):
+            raise ValueError(
+                "'queries' must be an array of JSON strings, not query objects. "
+                "JSON-encode each query object before adding it to the array."
+            )
+        return value
+
     if param_type is InputFile:
         return _coerce_input_file(value, param_name)
 
