@@ -13,6 +13,7 @@ Builds a single-tenant Starlette ASGI app for the served Appwrite project:
   following ``resource_metadata`` from the 401 challenge. Mirrors the Appwrite
   authorization server's discovery document verbatim.
 * ``/healthz`` — liveness probe.
+* ``/.well-known/openai-apps-challenge`` — public domain verification token.
 
 Auth uses the SDK primitives (``BearerAuthBackend`` + ``AuthContextMiddleware``) so the
 validated token is reachable from tool handlers via ``get_access_token()``.
@@ -438,6 +439,11 @@ async def health_endpoint(request: Request) -> PlainTextResponse:
     return PlainTextResponse(f"appwrite-mcp {SERVER_VERSION} ok")
 
 
+async def openai_apps_challenge_endpoint(request: Request) -> PlainTextResponse:
+    """Serve the public domain-ownership challenge for the OpenAI app listing."""
+    return PlainTextResponse("Fv03Ea1-vV7p7oIpvL3y2bRKrxVBJnSmscrDOdsVRuk")
+
+
 async def favicon_svg_endpoint(request: Request) -> Response:
     return Response(
         _icon_svg(),
@@ -477,6 +483,11 @@ def build_app() -> Starlette:
             yield
 
     routes = [
+        Route(
+            "/.well-known/openai-apps-challenge",
+            endpoint=openai_apps_challenge_endpoint,
+            methods=["GET"],
+        ),
         Route(
             "/.well-known/oauth-protected-resource/mcp",
             endpoint=mcp_path_protected_resource_metadata_endpoint,
