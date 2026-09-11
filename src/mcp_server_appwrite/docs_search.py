@@ -146,7 +146,7 @@ class DocsSearch:
             name=DOCS_TOOL_NAME,
             annotations=types.ToolAnnotations(
                 read_only_hint=True,
-                open_world_hint=False,
+                open_world_hint=True,
                 destructive_hint=False,
             ),
             description=(
