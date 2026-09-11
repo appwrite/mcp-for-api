@@ -8,6 +8,7 @@ from unittest import mock
 
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+from starlette.testclient import TestClient
 
 from mcp_server_appwrite import auth, telemetry
 from mcp_server_appwrite.http_app import (
@@ -316,6 +317,23 @@ class WellKnownMetadataEndpointTests(unittest.TestCase):
         self.assertIn("/.well-known/oauth-protected-resource/mcp", paths)
         self.assertIn("/.well-known/oauth-protected-resource", paths)
         self.assertIn("/.well-known/oauth-authorization-server", paths)
+
+    def test_openai_challenge_is_public_plain_text(self):
+        from mcp_server_appwrite import server as server_module
+
+        original_transport = server_module._UPLOAD_TRANSPORT
+        self.addCleanup(setattr, server_module, "_UPLOAD_TRANSPORT", original_transport)
+
+        with TestClient(build_app()) as client:
+            response = client.get(
+                "/.well-known/openai-apps-challenge", follow_redirects=False
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.content, b"Fv03Ea1-vV7p7oIpvL3y2bRKrxVBJnSmscrDOdsVRuk"
+        )
+        self.assertEqual(response.headers["content-type"], "text/plain; charset=utf-8")
 
 
 class ConsoleOverrideTests(unittest.TestCase):
