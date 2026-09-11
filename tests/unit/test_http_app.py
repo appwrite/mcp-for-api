@@ -331,7 +331,7 @@ class WellKnownMetadataEndpointTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.content, b"Fv03Ea1-vV7p7oIpvL3y2bRKrxVBJnSmscrDOdsVRuk"
+            response.content, b"Fv03Eal-vV7p7oIpvL3y2bRKrxVBJrSmscrDOdsVRuk"
         )
         media_type = response.headers["content-type"].split(";", 1)[0].strip()
         self.assertEqual(media_type, "text/plain")
