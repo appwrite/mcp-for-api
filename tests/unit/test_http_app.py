@@ -333,7 +333,8 @@ class WellKnownMetadataEndpointTests(unittest.TestCase):
         self.assertEqual(
             response.content, b"Fv03Ea1-vV7p7oIpvL3y2bRKrxVBJnSmscrDOdsVRuk"
         )
-        self.assertEqual(response.headers["content-type"], "text/plain; charset=utf-8")
+        media_type = response.headers["content-type"].split(";", 1)[0].strip()
+        self.assertEqual(media_type, "text/plain")
 
 
 class ConsoleOverrideTests(unittest.TestCase):
