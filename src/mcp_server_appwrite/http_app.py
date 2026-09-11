@@ -441,7 +441,7 @@ async def health_endpoint(request: Request) -> PlainTextResponse:
 
 async def openai_apps_challenge_endpoint(request: Request) -> PlainTextResponse:
     """Serve the public domain-ownership challenge for the OpenAI app listing."""
-    return PlainTextResponse("Fv03Ea1-vV7p7oIpvL3y2bRKrxVBJnSmscrDOdsVRuk")
+    return PlainTextResponse("Fv03Eal-vV7p7oIpvL3y2bRKrxVBJrSmscrDOdsVRuk")
 
 
 async def favicon_svg_endpoint(request: Request) -> Response:
