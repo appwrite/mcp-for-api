@@ -5,10 +5,8 @@ import json
 import os
 import sys
 import tempfile
-import threading
 import time
 import unittest
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -100,34 +98,6 @@ class _FakeClient:
     def stream(self, method, url, **kwargs):
         self.stream_kwargs = {"method": method, "url": url, **kwargs}
         return _FakeStream(self._response)
-
-
-class _AppwriteServer(ThreadingHTTPServer):
-    def __init__(self, status, payload):
-        body = json.dumps(payload).encode()
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                self.send_response(status)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, *args):
-                pass
-
-        super().__init__(("127.0.0.1", 0), Handler)
-        self.thread = threading.Thread(target=self.serve_forever, daemon=True)
-
-    def __enter__(self):
-        self.thread.start()
-        return self
-
-    def __exit__(self, *args):
-        self.shutdown()
-        self.thread.join()
-        super().__exit__(*args)
 
 
 class ServerHelperTests(unittest.TestCase):
@@ -567,7 +537,7 @@ class ServerHelperTests(unittest.TestCase):
         with patch.dict(server_module.SERVICE_CLASSES, {"functions": FunctionsService}):
             asyncio.run(run_check())
 
-    def test_call_tool_returns_api_error_for_unencoded_queries(self):
+    def test_call_tool_returns_sdk_input_validation_for_unencoded_queries(self):
         client = build_introspection_client()
         manager = register_services(client, profile=API_KEY_PROFILE)
         server = build_mcp_server(build_operator(manager, client), transport="stdio")
@@ -604,22 +574,24 @@ class ServerHelperTests(unittest.TestCase):
                     result = await entry.handler(ctx, params)
 
                     self.assertTrue(result.is_error)
-                    self.assertIn("code=400", result.content[0].text)
-                    self.assertIn(
-                        "type=general_argument_invalid", result.content[0].text
-                    )
+                    self.assertIn("type=sdk_input_validation", result.content[0].text)
                     self.assertIn("queries", result.content[0].text)
+                    self.assertIn("string", result.content[0].text)
 
-        with _AppwriteServer(
-            400,
-            {
-                "message": "Invalid queries: query values must be strings",
-                "code": 400,
-                "type": "general_argument_invalid",
-            },
-        ) as api:
-            client.set_endpoint(f"http://127.0.0.1:{api.server_port}/v1")
+        with (
+            patch(
+                "requests.sessions.Session.request",
+                side_effect=AssertionError(
+                    "Invalid inputs must not send HTTP requests"
+                ),
+            ) as request,
+            patch.object(server_module.error_monitoring, "_enabled", True),
+            patch("sentry_sdk.capture_exception") as capture,
+        ):
             asyncio.run(run_check())
+
+        request.assert_not_called()
+        capture.assert_not_called()
 
     def test_call_tool_preserves_encoded_queries(self):
         client = build_introspection_client()
